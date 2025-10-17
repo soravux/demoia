@@ -38,7 +38,7 @@ const App = () => {
     tf.ready().then(async () => {
       setLoading({ loading: true, progress: 0 });
       const yolo = await tf.loadGraphModel(
-        `${window.location.href}/${modelName}_web_model/model.json`,
+        `${window.location.origin}${window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'))}/${modelName}_web_model/model.json`,
         {
           onProgress: (fractions) => {
             setLoading({ loading: true, progress: fractions }); // set loading fractions
