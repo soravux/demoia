@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InteractiveGPT - AI Vision Interface</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>InteractiveGPT</h1>
+            <p>AI-powered image and video analysis</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel - Media Gallery -->
+            <div class="left-panel">
+                <div class="panel-header">
+                    <h2>Media Gallery</h2>
+                    <button id="refreshBtn" class="refresh-btn">🔄 Refresh</button>
+                </div>
+                <div class="media-grid" id="mediaGrid">
+                    <!-- Media items will be dynamically loaded here -->
+                </div>
+            </div>
+
+            <!-- Right Panel - Chat Interface -->
+            <div class="right-panel">
+                <div class="panel-header">
+                    <h2>AI Chat</h2>
+                    <div class="api-status">
+                        <span id="apiStatus" class="status-indicator">●</span>
+                        <span id="apiStatusText">Ready</span>
+                    </div>
+                </div>
+
+                <!-- Selected Media Display -->
+                <div class="selected-media" id="selectedMedia">
+                    <p>Select an image or video from the gallery to start chatting</p>
+                </div>
+
+                <!-- Chat Interface -->
+                <div class="chat-interface">
+                    <div class="input-section">
+                        <div class="input-group">
+                            <textarea 
+                                id="promptInput" 
+                                placeholder="Describe what you want to know about the selected media..."
+                                rows="3"
+                            ></textarea>
+                            <button id="sendBtn" class="send-btn" disabled>
+                                <span class="btn-text">Send</span>
+                                <span class="btn-loading" style="display: none;">⏳</span>
+                            </button>
+                        </div>
+                        <div class="api-key-section">
+                            <input 
+                                type="password" 
+                                id="apiKeyInput" 
+                                placeholder="Enter your OpenAI API Key"
+                                class="api-key-input"
+                            >
+                            <button id="saveApiKey" class="save-key-btn">Save</button>
+                        </div>
+                    </div>
+
+                    <!-- Chat Output -->
+                    <div class="chat-output">
+                        <div class="output-header">
+                            <h3>AI Response</h3>
+                            <button id="clearChat" class="clear-btn">Clear</button>
+                        </div>
+                        <div class="output-content" id="chatOutput">
+                            <p class="placeholder">Your AI responses will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Processing with AI...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

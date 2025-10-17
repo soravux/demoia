@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Demo Hub</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .demo-hub {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .demo-hub h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .demo-hub p {
+            font-size: 1.2rem;
+            margin-bottom: 50px;
+            opacity: 0.9;
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .demo-button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            min-width: 250px;
+            border: 3px solid transparent;
+        }
+
+        .demo-button:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            border-color: #4facfe;
+        }
+
+        .demo-button .logo {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .demo-button h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .demo-button p {
+            font-size: 1rem;
+            color: #666;
+            text-align: center;
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .yolo-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .yolo-button:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #d63031 100%);
+            border-color: #ff6b6b;
+        }
+
+        .yolo-button h2,
+        .yolo-button p {
+            color: white;
+        }
+
+        .gpt-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .gpt-button:hover {
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+            border-color: #4facfe;
+        }
+
+        .gpt-button h2,
+        .gpt-button p {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .demo-buttons {
+                flex-direction: column;
+                gap: 30px;
+            }
+            
+            .demo-hub h1 {
+                font-size: 2.5rem;
+            }
+            
+            .demo-button {
+                min-width: 200px;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-hub">
+        <h1>Démo les Filles et les Sciences</h1>
+        
+        <div class="demo-buttons">
+            <a href="demo_yolo.html" class="demo-button yolo-button">
+                <span class="logo">🎯</span>
+                <h2>Détection d'objets</h2>
+                <p>Détection d'objets en temps réel sur des images et vidéos</p>
+            </a>
+            
+            <a href="demo_gpt.html" class="demo-button gpt-button">
+                <span class="logo">💬</span>
+                <h2>ChatGPT</h2>
+                <p>Discussion interactive avec ChatGPT et des images</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
