@@ -54,9 +54,6 @@ class InteractiveGPT {
         // Load saved API key
         if (this.apiKey) {
             this.apiKeyInput.value = this.apiKey;
-        } else {
-            // Try to load from a local file (for development)
-            this.tryLoadApiKeyFromFile();
         }
     }
 
@@ -628,25 +625,6 @@ class InteractiveGPT {
         }, 3000);
     }
 
-    async tryLoadApiKeyFromFile() {
-        try {
-            // Try to load from a common development file location
-            const response = await fetch('../openai_key.txt');
-            if (response.ok) {
-                const apiKey = (await response.text()).trim();
-                if (apiKey && apiKey.startsWith('sk-')) {
-                    this.apiKey = apiKey;
-                    this.apiKeyInput.value = apiKey;
-                    localStorage.setItem('openai_api_key', apiKey);
-                    this.updateApiStatus();
-                    console.log('API key loaded from file');
-                }
-            }
-        } catch (error) {
-            // Silently fail - this is just a convenience feature
-            console.log('No API key file found, user will need to enter manually');
-        }
-    }
 }
 
 // File handling utilities for demo purposes
