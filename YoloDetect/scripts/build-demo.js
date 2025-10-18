@@ -1,4 +1,4 @@
-import { rename, existsSync, copyFileSync, mkdirSync, readdirSync, statSync } from 'fs';
+import { rename, existsSync, copyFileSync, mkdirSync, readdirSync, statSync, rmSync } from 'fs';
 import { join, dirname } from 'path';
 
 const distPath = './dist';
@@ -36,10 +36,14 @@ if (existsSync(oldFile)) {
       
       if (existsSync(assetsSource)) {
         try {
-          // Create assets directory in docs if it doesn't exist
-          if (!existsSync(assetsDest)) {
-            mkdirSync(assetsDest, { recursive: true });
+          // Remove all files in docs/assets if it exists
+          if (existsSync(assetsDest)) {
+            rmSync(assetsDest, { recursive: true, force: true });
+            console.log('✅ Cleared existing assets directory in docs');
           }
+          
+          // Create assets directory in docs
+          mkdirSync(assetsDest, { recursive: true });
           
           // Copy all files from assets directory
           const files = readdirSync(assetsSource);

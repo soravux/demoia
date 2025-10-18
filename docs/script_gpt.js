@@ -68,18 +68,6 @@ class InteractiveGPT {
                     type: 'image/jpeg',
                     url: './data/exemple_1.jpg',
                     file: null
-                },
-                {
-                    name: 'exemple 2',
-                    type: 'video/mp4',
-                    url: './data/exemple_2.mp4',
-                    file: null
-                },
-                {
-                    name: 'exemple 3',
-                    type: 'video/mp4',
-                    url: './data/exemple_3.mp4',
-                    file: null
                 }
             ];
             
