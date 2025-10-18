@@ -134,16 +134,14 @@ class InteractiveGPT {
     }
 
     isMediaFile(fileName) {
-        const mediaExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.mp4', '.webm', '.mov'];
+        const mediaExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
         const lowerName = fileName.toLowerCase();
         return mediaExtensions.some(ext => lowerName.endsWith(ext));
     }
 
     getMediaType(fileName) {
         const lowerName = fileName.toLowerCase();
-        if (lowerName.endsWith('.mp4') || lowerName.endsWith('.webm') || lowerName.endsWith('.mov')) {
-            return 'video/mp4';
-        } else if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
+        if (lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg')) {
             return 'image/jpeg';
         } else if (lowerName.endsWith('.png')) {
             return 'image/png';
@@ -161,8 +159,8 @@ class InteractiveGPT {
         if (this.mediaFiles.length === 0) {
             this.mediaGrid.innerHTML = `
                 <div class="no-media">
-                    <p>Aucun fichier média trouvé dans le dossier ./data/</p>
-                    <p>Ajoutez des images (.jpg, .png, .gif) ou des vidéos (.mp4, .webm) pour commencer</p>
+                    <p>Aucune image trouvée dans le dossier ./data/</p>
+                    <p>Ajoutez des images (.jpg, .png, .gif, .webp) pour commencer</p>
                 </div>
             `;
             return;
@@ -173,14 +171,11 @@ class InteractiveGPT {
             mediaItem.className = 'media-item';
             mediaItem.dataset.index = index;
             
-            const isVideo = file.type.startsWith('video/');
-            const mediaElement = isVideo ? 
-                `<video src="${file.url}" preload="metadata"></video>` :
-                `<img src="${file.url}" alt="${file.name}">`;
+            const mediaElement = `<img src="${file.url}" alt="${file.name}">`;
             
             mediaItem.innerHTML = `
                 ${mediaElement}
-                <div class="media-type">${isVideo ? 'VIDÉO' : 'IMAGE'}</div>
+                <div class="media-type">IMAGE</div>
             `;
             
             mediaItem.addEventListener('click', () => this.selectMedia(file, mediaItem));
@@ -207,28 +202,18 @@ class InteractiveGPT {
 
     updateSelectedMediaDisplay() {
         if (!this.selectedMedia) {
-            this.selectedMediaDiv.innerHTML = '<p>Sélectionnez une image ou une vidéo de la galerie pour commencer à discuter</p>';
+            this.selectedMediaDiv.innerHTML = '<p>Sélectionnez une image de la galerie pour commencer à discuter</p>';
             return;
         }
 
-        const isVideo = this.selectedMedia.type.startsWith('video/');
-        const mediaElement = isVideo ? 
-            `<video src="${this.selectedMedia.url}" controls></video>` :
-            `<img src="${this.selectedMedia.url}" alt="${this.selectedMedia.name}">`;
-        
-        // Check if this is an image that might need resizing
-        let resizeInfo = '';
-        if (!isVideo) {
-            resizeInfo = '<p style="margin-top: 5px; font-size: 0.8rem; color: #4facfe; font-style: italic;">📏 Les grandes images seront automatiquement redimensionnées à 512px maximum</p>';
-        }
+        const mediaElement = `<img src="${this.selectedMedia.url}" alt="${this.selectedMedia.name}">`;
         
         this.selectedMediaDiv.innerHTML = `
             <div>
                 ${mediaElement}
                 <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
-                    ${this.selectedMedia.name} (${isVideo ? 'Vidéo' : 'Image'})
+                    ${this.selectedMedia.name} (Image)
                 </p>
-                ${resizeInfo}
             </div>
         `;
     }
@@ -241,7 +226,7 @@ class InteractiveGPT {
 
         if (!this.selectedMedia || !this.promptInput.value.trim() || !this.apiKey) {
             const missing = [];
-            if (!this.selectedMedia) missing.push('sélection de média');
+            if (!this.selectedMedia) missing.push('sélection d\'image');
             if (!this.promptInput.value.trim()) missing.push('texte de la demande');
             if (!this.apiKey) missing.push('clé API');
             
@@ -454,11 +439,6 @@ class InteractiveGPT {
     }
 
     async callChatGPTAPI(prompt, base64Media, mediaType) {
-        const isVideo = mediaType.startsWith('video/');
-        
-        if (isVideo) {
-            throw new Error('L\'analyse vidéo n\'est pas prise en charge par l\'API ChatGPT actuelle. Veuillez utiliser uniquement des images.');
-        }
 
         const requestBody = {
             model: 'gpt-5-mini',
@@ -648,7 +628,7 @@ class FileHandler {
             const input = document.createElement('input');
             input.type = 'file';
             input.multiple = true;
-            input.accept = 'image/*,video/*';
+            input.accept = 'image/*';
             
             input.onchange = (e) => {
                 const files = Array.from(e.target.files);
