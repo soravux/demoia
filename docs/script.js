@@ -80,12 +80,6 @@ class InteractiveGPT {
                     type: 'video/mp4',
                     url: './data/exemple_3.mp4',
                     file: null
-                },
-                {
-                    name: 'istockphoto-523091055-612x612.jpg',
-                    type: 'image/jpeg',
-                    url: './data/istockphoto-523091055-612x612.jpg',
-                    file: null
                 }
             ];
             
