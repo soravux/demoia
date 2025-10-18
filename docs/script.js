@@ -64,6 +64,24 @@ class InteractiveGPT {
             // Preload known images from data folder
             this.mediaFiles = [
                 {
+                    name: 'exemple 1',
+                    type: 'image/jpeg',
+                    url: './data/exemple_1.jpg',
+                    file: null
+                },
+                {
+                    name: 'exemple 2',
+                    type: 'video/mp4',
+                    url: './data/exemple_2.mp4',
+                    file: null
+                },
+                {
+                    name: 'exemple 3',
+                    type: 'video/mp4',
+                    url: './data/exemple_3.mp4',
+                    file: null
+                },
+                {
                     name: 'istockphoto-523091055-612x612.jpg',
                     type: 'image/jpeg',
                     url: './data/istockphoto-523091055-612x612.jpg',
