@@ -14,7 +14,7 @@ class InteractiveGPT {
     initializeElements() {
         // Media gallery elements
         this.mediaGrid = document.getElementById('mediaGrid');
-        this.refreshBtn = document.getElementById('refreshBtn');
+        this.loadNewImageBtn = document.getElementById('loadNewImageBtn');
         
         // Chat interface elements
         this.selectedMediaDiv = document.getElementById('selectedMedia');
@@ -35,7 +35,7 @@ class InteractiveGPT {
 
     bindEvents() {
         // Media gallery events
-        this.refreshBtn.addEventListener('click', () => this.loadMediaFiles());
+        this.loadNewImageBtn.addEventListener('click', () => this.loadNewImage());
         
         // Chat interface events
         this.sendBtn.addEventListener('click', () => this.sendPrompt());
@@ -59,25 +59,39 @@ class InteractiveGPT {
 
     async loadMediaFiles() {
         try {
-            this.updateApiStatus('loading', 'Loading media files...');
+            this.updateApiStatus('loading', 'Chargement des fichiers média...');
             
-            // In a real implementation, you would fetch from a server
-            // For now, we'll simulate loading media files
-            const response = await fetch('./data/');
-            if (!response.ok) {
-                throw new Error('Could not access data folder');
-            }
+            // Preload known images from data folder
+            this.mediaFiles = [
+                {
+                    name: 'istockphoto-523091055-612x612.jpg',
+                    type: 'image/jpeg',
+                    url: './data/istockphoto-523091055-612x612.jpg',
+                    file: null
+                }
+            ];
             
-            // Since we can't directly list files from client-side,
-            // we'll provide a way to manually add files or use a server endpoint
-            this.mediaFiles = await this.getMediaFilesFromServer();
             this.renderMediaGrid();
-            
-            this.updateApiStatus('ready', 'Ready');
+            this.updateApiStatus('ready', 'Prêt');
         } catch (error) {
             console.error('Error loading media files:', error);
-            this.updateApiStatus('error', 'Error loading media');
-            this.showError('Could not load media files. Make sure the data folder exists and contains media files.');
+            this.updateApiStatus('error', 'Erreur de chargement');
+            this.showError('Impossible de charger les fichiers média. Assurez-vous que le dossier data existe et contient des fichiers média.');
+        }
+    }
+
+    async loadNewImage() {
+        try {
+            const files = await FileHandler.loadFilesFromInput();
+            if (files && files.length > 0) {
+                // Add new files to existing media files
+                this.mediaFiles = [...this.mediaFiles, ...files];
+                this.renderMediaGrid();
+                this.showSuccess(`${files.length} nouveau(x) fichier(s) chargé(s)`);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des fichiers:', error);
+            this.showError('Erreur lors du chargement des nouveaux fichiers');
         }
     }
 
@@ -147,8 +161,8 @@ class InteractiveGPT {
         if (this.mediaFiles.length === 0) {
             this.mediaGrid.innerHTML = `
                 <div class="no-media">
-                    <p>No media files found in ./data/ folder</p>
-                    <p>Add images (.jpg, .png, .gif) or videos (.mp4, .webm) to get started</p>
+                    <p>Aucun fichier média trouvé dans le dossier ./data/</p>
+                    <p>Ajoutez des images (.jpg, .png, .gif) ou des vidéos (.mp4, .webm) pour commencer</p>
                 </div>
             `;
             return;
@@ -166,7 +180,7 @@ class InteractiveGPT {
             
             mediaItem.innerHTML = `
                 ${mediaElement}
-                <div class="media-type">${isVideo ? 'VIDEO' : 'IMAGE'}</div>
+                <div class="media-type">${isVideo ? 'VIDÉO' : 'IMAGE'}</div>
             `;
             
             mediaItem.addEventListener('click', () => this.selectMedia(file, mediaItem));
@@ -193,7 +207,7 @@ class InteractiveGPT {
 
     updateSelectedMediaDisplay() {
         if (!this.selectedMedia) {
-            this.selectedMediaDiv.innerHTML = '<p>Select an image or video from the gallery to start chatting</p>';
+            this.selectedMediaDiv.innerHTML = '<p>Sélectionnez une image ou une vidéo de la galerie pour commencer à discuter</p>';
             return;
         }
 
@@ -205,14 +219,14 @@ class InteractiveGPT {
         // Check if this is an image that might need resizing
         let resizeInfo = '';
         if (!isVideo) {
-            resizeInfo = '<p style="margin-top: 5px; font-size: 0.8rem; color: #4facfe; font-style: italic;">📏 Large images will be automatically resized to 512px max dimension</p>';
+            resizeInfo = '<p style="margin-top: 5px; font-size: 0.8rem; color: #4facfe; font-style: italic;">📏 Les grandes images seront automatiquement redimensionnées à 512px maximum</p>';
         }
         
         this.selectedMediaDiv.innerHTML = `
             <div>
                 ${mediaElement}
                 <p style="margin-top: 10px; font-size: 0.9rem; color: #666;">
-                    ${this.selectedMedia.name} (${isVideo ? 'Video' : 'Image'})
+                    ${this.selectedMedia.name} (${isVideo ? 'Vidéo' : 'Image'})
                 </p>
                 ${resizeInfo}
             </div>
@@ -227,11 +241,11 @@ class InteractiveGPT {
 
         if (!this.selectedMedia || !this.promptInput.value.trim() || !this.apiKey) {
             const missing = [];
-            if (!this.selectedMedia) missing.push('media selection');
-            if (!this.promptInput.value.trim()) missing.push('prompt text');
-            if (!this.apiKey) missing.push('API key');
+            if (!this.selectedMedia) missing.push('sélection de média');
+            if (!this.promptInput.value.trim()) missing.push('texte de la demande');
+            if (!this.apiKey) missing.push('clé API');
             
-            const errorMsg = `Please provide: ${missing.join(', ')}`;
+            const errorMsg = `Veuillez fournir : ${missing.join(', ')}`;
             console.error('❌ Validation failed:', errorMsg);
             this.showError(errorMsg);
             return;
@@ -254,7 +268,7 @@ class InteractiveGPT {
             });
             
             // Update loading message for image processing
-            this.updateLoadingMessage('Processing image...');
+            this.updateLoadingMessage('Traitement de l\'image...');
             
             // Convert media to base64
             const base64Media = await this.convertMediaToBase64(this.selectedMedia);
@@ -262,7 +276,7 @@ class InteractiveGPT {
             console.log('📏 Base64 preview (first 100 chars):', base64Media.substring(0, 100) + '...');
             
             console.log('🔄 Step 2: Calling ChatGPT API');
-            this.updateLoadingMessage('Sending to AI...');
+            this.updateLoadingMessage('Envoi à l\'IA...');
             
             // Send to ChatGPT API - use JPEG for resized images, original type for others
             const apiMediaType = this.selectedMedia.type.startsWith('image/') ? 'image/jpeg' : this.selectedMedia.type;
@@ -271,7 +285,7 @@ class InteractiveGPT {
             console.log('✅ API call successful, response length:', response.length);
             
             console.log('🔄 Step 3: Displaying response');
-            this.updateLoadingMessage('Processing response...');
+            this.updateLoadingMessage('Traitement de la réponse...');
             
             // Display response
             this.displayResponse(response);
@@ -280,7 +294,7 @@ class InteractiveGPT {
         } catch (error) {
             console.error('❌ Error in sendPrompt:', error);
             console.error('❌ Error stack:', error.stack);
-            this.showError('Error communicating with ChatGPT API: ' + error.message);
+            this.showError('Erreur de communication avec l\'API ChatGPT : ' + error.message);
         } finally {
             console.log('🔄 Cleaning up: hiding loading, re-enabling button');
             this.showLoading(false);
@@ -443,7 +457,7 @@ class InteractiveGPT {
         const isVideo = mediaType.startsWith('video/');
         
         if (isVideo) {
-            throw new Error('Video analysis is not supported by the current ChatGPT API. Please use images only.');
+            throw new Error('L\'analyse vidéo n\'est pas prise en charge par l\'API ChatGPT actuelle. Veuillez utiliser uniquement des images.');
         }
 
         const requestBody = {
@@ -601,7 +615,7 @@ class InteractiveGPT {
         errorDiv.style.borderLeftColor = '#dc3545';
         errorDiv.style.backgroundColor = '#f8d7da';
         errorDiv.style.color = '#721c24';
-        errorDiv.textContent = `Error: ${message}`;
+        errorDiv.textContent = `Erreur : ${message}`;
         
         this.chatOutput.appendChild(errorDiv);
         this.chatOutput.scrollTop = this.chatOutput.scrollHeight;
@@ -614,7 +628,7 @@ class InteractiveGPT {
         successDiv.style.borderLeftColor = '#28a745';
         successDiv.style.backgroundColor = '#d4edda';
         successDiv.style.color = '#155724';
-        successDiv.textContent = `Success: ${message}`;
+        successDiv.textContent = `Succès : ${message}`;
         
         this.chatOutput.appendChild(successDiv);
         this.chatOutput.scrollTop = this.chatOutput.scrollHeight;
@@ -655,34 +669,6 @@ class FileHandler {
 // Initialize the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.interactiveGPT = new InteractiveGPT();
-    
-    // Add a demo button to load files manually (for testing)
-    const demoButton = document.createElement('button');
-    demoButton.textContent = 'Load Demo Files';
-    demoButton.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: 5px;
-        cursor: pointer;
-        z-index: 1000;
-    `;
-    
-    demoButton.addEventListener('click', async () => {
-        try {
-            const files = await FileHandler.loadFilesFromInput();
-            window.interactiveGPT.mediaFiles = files;
-            window.interactiveGPT.renderMediaGrid();
-        } catch (error) {
-            console.error('Error loading files:', error);
-        }
-    });
-    
-    document.body.appendChild(demoButton);
 });
 
 // Add some CSS for the no-media state
