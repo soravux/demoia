@@ -27,13 +27,13 @@ const DetectionTable = ({ detectionCounts = {} }) => {
 
   return (
     <div className="detection-table-container">
-      <h3>Detection Results</h3>
+      <h3>Résultats de détection</h3>
       <div className="detection-table-wrapper">
         <table className="detection-table">
           <thead>
             <tr>
-              <th>Object Class</th>
-              <th>Count</th>
+              <th>Classe d'objet</th>
+              <th>Nombre</th>
             </tr>
           </thead>
           <tbody>
@@ -56,10 +56,10 @@ const DetectionTable = ({ detectionCounts = {} }) => {
       </div>
       <div className="detection-summary">
         <p>
-          Total objects detected: <strong>{sortedDetections.reduce((sum, { count }) => sum + count, 0)}</strong>
+          Total d'objets détectés : <strong>{sortedDetections.reduce((sum, { count }) => sum + count, 0)}</strong>
         </p>
         <p>
-          Unique classes: <strong>{sortedDetections.length}</strong>
+          Classes uniques : <strong>{sortedDetections.length}</strong>
         </p>
       </div>
     </div>
