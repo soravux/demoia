@@ -1,7 +1,104 @@
+// Encryption/Decryption utilities using AES-GCM and PBKDF2
+class EncryptionUtil {
+    // Derive key from password using PBKDF2
+    static async deriveKey(password, salt) {
+        const encoder = new TextEncoder();
+        const passwordKey = await crypto.subtle.importKey(
+            'raw',
+            encoder.encode(password),
+            'PBKDF2',
+            false,
+            ['deriveBits', 'deriveKey']
+        );
+
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: 'PBKDF2',
+                salt: salt,
+                iterations: 100000,
+                hash: 'SHA-256'
+            },
+            passwordKey,
+            {
+                name: 'AES-GCM',
+                length: 256
+            },
+            false,
+            ['encrypt', 'decrypt']
+        );
+
+        return key;
+    }
+
+    // Encrypt text using AES-GCM
+    static async encrypt(plaintext, password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(plaintext);
+
+        // Generate random salt and IV
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+
+        // Derive key from password
+        const key = await this.deriveKey(password, salt);
+
+        // Encrypt the data
+        const encryptedData = await crypto.subtle.encrypt(
+            {
+                name: 'AES-GCM',
+                iv: iv
+            },
+            key,
+            data
+        );
+
+        // Combine salt, iv, and encrypted data
+        const combined = new Uint8Array(salt.length + iv.length + encryptedData.byteLength);
+        combined.set(salt, 0);
+        combined.set(iv, salt.length);
+        combined.set(new Uint8Array(encryptedData), salt.length + iv.length);
+
+        // Convert to base64 for storage
+        return btoa(String.fromCharCode(...combined));
+    }
+
+    // Decrypt text using AES-GCM
+    static async decrypt(encryptedBase64, password) {
+        try {
+            // Decode from base64
+            const combined = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+
+            // Extract salt, iv, and encrypted data
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const encryptedData = combined.slice(28);
+
+            // Derive key from password
+            const key = await this.deriveKey(password, salt);
+
+            // Decrypt the data
+            const decryptedData = await crypto.subtle.decrypt(
+                {
+                    name: 'AES-GCM',
+                    iv: iv
+                },
+                key,
+                encryptedData
+            );
+
+            // Convert to text
+            const decoder = new TextDecoder();
+            return decoder.decode(decryptedData);
+        } catch (error) {
+            throw new Error('Decryption failed. Invalid password or corrupted data.');
+        }
+    }
+}
+
 // InteractiveGPT - AI Vision Interface
 class InteractiveGPT {
     constructor() {
-        this.apiKey = localStorage.getItem('openai_api_key') || '';
+        this.apiKey = '';
         this.selectedMedia = null;
         this.mediaFiles = [];
         
@@ -23,9 +120,9 @@ class InteractiveGPT {
         this.chatOutput = document.getElementById('chatOutput');
         this.clearChatBtn = document.getElementById('clearChat');
         
-        // API key elements
-        this.apiKeyInput = document.getElementById('apiKeyInput');
-        this.saveApiKeyBtn = document.getElementById('saveApiKey');
+        // Password elements
+        this.passwordInput = document.getElementById('passwordInput');
+        this.unlockKeyBtn = document.getElementById('unlockKeyBtn');
         
         // Status elements
         this.apiStatus = document.getElementById('apiStatus');
@@ -47,13 +144,45 @@ class InteractiveGPT {
         });
         this.clearChatBtn.addEventListener('click', () => this.clearChat());
         
-        // API key events
-        this.saveApiKeyBtn.addEventListener('click', () => this.saveApiKey());
-        this.apiKeyInput.addEventListener('input', () => this.updateApiStatus());
-        
-        // Load saved API key
-        if (this.apiKey) {
-            this.apiKeyInput.value = this.apiKey;
+        // Password events
+        this.unlockKeyBtn.addEventListener('click', () => this.unlockApiKey());
+        this.passwordInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.unlockApiKey();
+            }
+        });
+    }
+
+    async unlockApiKey() {
+        const password = this.passwordInput.value.trim();
+        if (!password) {
+            this.showError('Veuillez entrer un mot de passe');
+            return;
+        }
+
+        try {
+            this.updateApiStatus('loading', 'Déverrouillage de la clé API...');
+            
+            // Load encrypted API key file
+            const response = await fetch('./api.key');
+            if (!response.ok) {
+                throw new Error('Le fichier api.key est introuvable. Utilisez create_key.html pour le créer.');
+            }
+            
+            const encryptedKey = await response.text();
+            
+            // Decrypt using password
+            this.apiKey = await EncryptionUtil.decrypt(encryptedKey.trim(), password);
+            
+            this.updateApiStatus('ready', 'Clé API déverrouillée');
+            this.showSuccess('Clé API déverrouillée avec succès');
+            this.passwordInput.value = ''; // Clear password field for security
+        } catch (error) {
+            console.error('Error unlocking API key:', error);
+            this.updateApiStatus('error', 'Erreur de déverrouillage');
+            this.showError('Échec du déverrouillage: ' + error.message);
+            this.apiKey = '';
         }
     }
 
@@ -550,30 +679,18 @@ class InteractiveGPT {
     }
 
     clearChat() {
-        this.chatOutput.innerHTML = '<p class="placeholder">Your AI responses will appear here...</p>';
+        this.chatOutput.innerHTML = '<p class="placeholder">Vos réponses IA apparaîtront ici...</p>';
     }
 
-    saveApiKey() {
-        const apiKey = this.apiKeyInput.value.trim();
-        if (!apiKey) {
-            this.showError('Please enter a valid API key');
-            return;
-        }
-        
-        this.apiKey = apiKey;
-        localStorage.setItem('openai_api_key', apiKey);
-        this.updateApiStatus();
-        this.showSuccess('API key saved successfully');
-    }
 
-    updateApiStatus(status = 'ready', text = 'Ready') {
+    updateApiStatus(status = 'ready', text = 'Prêt') {
         this.apiStatus.className = `status-indicator ${status}`;
         this.apiStatusText.textContent = text;
         
         if (status === 'ready' && this.apiKey) {
-            this.apiStatusText.textContent = 'API Key Configured';
+            this.apiStatusText.textContent = 'Clé API Déverrouillée';
         } else if (status === 'ready' && !this.apiKey) {
-            this.apiStatusText.textContent = 'API Key Required';
+            this.apiStatusText.textContent = 'Clé API Requise';
         }
     }
 

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Générateur de Clé API Chiffrée</title>
+    <link rel="stylesheet" href="style_gpt.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            font-weight: 300;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #87CEEB 0%, #ADD8E6 100%);
+            color: #1e3a8a;
+            padding: 30px;
+            border-radius: 20px 20px 0 0;
+            text-align: center;
+            margin: -40px -40px 30px -40px;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 200;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(255,255,255,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #1e3a8a;
+            font-weight: 400;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #87CEEB;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #87CEEB 0%, #ADD8E6 100%);
+            color: #1e3a8a;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 300;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(135, 206, 235, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #1565C0;
+        }
+
+        .success-box {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+            font-size: 0.9rem;
+            color: #155724;
+        }
+
+        .error-box {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+            font-size: 0.9rem;
+            color: #721c24;
+        }
+
+        .instructions {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .instructions h3 {
+            color: #1e3a8a;
+            margin-top: 0;
+            font-weight: 400;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Générateur de Clé API Chiffrée</h1>
+        </div>
+
+        <div class="info-box">
+            <strong>Information:</strong> Cette page vous permet de créer un fichier api.key chiffré qui contient votre clé API OpenAI. Utilisez un mot de passe fort et mémorisez-le, car vous en aurez besoin pour déverrouiller la clé dans demo_gpt.html.
+        </div>
+
+        <form id="keyGeneratorForm">
+            <div class="form-group">
+                <label for="apiKeyInput">Clé API OpenAI:</label>
+                <input 
+                    type="text" 
+                    id="apiKeyInput" 
+                    placeholder="sk-..."
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="passwordInput">Mot de passe:</label>
+                <input 
+                    type="password" 
+                    id="passwordInput" 
+                    placeholder="Entrez un mot de passe fort"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPasswordInput">Confirmer le mot de passe:</label>
+                <input 
+                    type="password" 
+                    id="confirmPasswordInput" 
+                    placeholder="Confirmez le mot de passe"
+                    required
+                    autocomplete="off"
+                >
+            </div>
+
+            <button type="submit" class="generate-btn" id="generateBtn">
+                Générer et Télécharger api.key
+            </button>
+        </form>
+
+        <div class="success-box" id="successBox">
+            <strong>Succès!</strong> Le fichier api.key a été généré et téléchargé. Placez-le dans le dossier docs/ et utilisez-le dans demo_gpt.html avec le mot de passe que vous avez défini.
+        </div>
+
+        <div class="error-box" id="errorBox">
+            <strong>Erreur:</strong> <span id="errorMessage"></span>
+        </div>
+
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ol>
+                <li>Entrez votre clé API OpenAI (commence par "sk-")</li>
+                <li>Choisissez un mot de passe fort et mémorisez-le</li>
+                <li>Confirmez le mot de passe</li>
+                <li>Cliquez sur "Générer et Télécharger api.key"</li>
+                <li>Placez le fichier téléchargé (api.key) dans le dossier docs/</li>
+                <li>Dans demo_gpt.html, utilisez le mot de passe pour déverrouiller la clé</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Encryption/Decryption utilities using AES-GCM and PBKDF2
+        class EncryptionUtil {
+            // Derive key from password using PBKDF2
+            static async deriveKey(password, salt) {
+                const encoder = new TextEncoder();
+                const passwordKey = await crypto.subtle.importKey(
+                    'raw',
+                    encoder.encode(password),
+                    'PBKDF2',
+                    false,
+                    ['deriveBits', 'deriveKey']
+                );
+
+                const key = await crypto.subtle.deriveKey(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    passwordKey,
+                    {
+                        name: 'AES-GCM',
+                        length: 256
+                    },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+
+                return key;
+            }
+
+            // Encrypt text using AES-GCM
+            static async encrypt(plaintext, password) {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(plaintext);
+
+                // Generate random salt and IV
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+
+                // Derive key from password
+                const key = await this.deriveKey(password, salt);
+
+                // Encrypt the data
+                const encryptedData = await crypto.subtle.encrypt(
+                    {
+                        name: 'AES-GCM',
+                        iv: iv
+                    },
+                    key,
+                    data
+                );
+
+                // Combine salt, iv, and encrypted data
+                const combined = new Uint8Array(salt.length + iv.length + encryptedData.byteLength);
+                combined.set(salt, 0);
+                combined.set(iv, salt.length);
+                combined.set(new Uint8Array(encryptedData), salt.length + iv.length);
+
+                // Convert to base64 for storage
+                return btoa(String.fromCharCode(...combined));
+            }
+        }
+
+        // Form handling
+        document.getElementById('keyGeneratorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const apiKey = document.getElementById('apiKeyInput').value.trim();
+            const password = document.getElementById('passwordInput').value;
+            const confirmPassword = document.getElementById('confirmPasswordInput').value;
+
+            // Hide previous messages
+            document.getElementById('successBox').style.display = 'none';
+            document.getElementById('errorBox').style.display = 'none';
+
+            // Validation
+            if (!apiKey) {
+                showError('Veuillez entrer une clé API');
+                return;
+            }
+
+            if (!apiKey.startsWith('sk-')) {
+                showError('La clé API OpenAI doit commencer par "sk-"');
+                return;
+            }
+
+            if (!password || password.length < 8) {
+                showError('Le mot de passe doit contenir au moins 8 caractères');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showError('Les mots de passe ne correspondent pas');
+                return;
+            }
+
+            try {
+                // Disable button during processing
+                const generateBtn = document.getElementById('generateBtn');
+                generateBtn.disabled = true;
+                generateBtn.textContent = 'Chiffrement en cours...';
+
+                // Encrypt the API key
+                const encryptedKey = await EncryptionUtil.encrypt(apiKey, password);
+
+                // Create download
+                const blob = new Blob([encryptedKey], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'api.key';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                // Clear form
+                document.getElementById('apiKeyInput').value = '';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('confirmPasswordInput').value = '';
+
+                // Show success
+                document.getElementById('successBox').style.display = 'block';
+                generateBtn.textContent = 'Générer et Télécharger api.key';
+                generateBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Error generating encrypted key:', error);
+                showError('Erreur lors du chiffrement: ' + error.message);
+                document.getElementById('generateBtn').disabled = false;
+                document.getElementById('generateBtn').textContent = 'Générer et Télécharger api.key';
+            }
+        });
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorBox').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
